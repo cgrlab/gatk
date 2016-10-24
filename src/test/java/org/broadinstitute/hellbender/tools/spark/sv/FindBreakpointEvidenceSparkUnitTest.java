@@ -65,8 +65,8 @@ public final class FindBreakpointEvidenceSparkUnitTest extends BaseTest {
     @Test(groups = "spark")
     public void getKmerIntervalsTest() {
         final Set<SVKmer> killSet = new HashSet<>();
-        killSet.add(SVKmerizer.toKmer("ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG"));
-        killSet.add(SVKmerizer.toKmer("TACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTAC"));
+        killSet.add(SVKmerizer.toKmer("ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG",new SVKmer(51)));
+        killSet.add(SVKmerizer.toKmer("TACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTAC",new SVKmer(51)));
         Assert.assertEquals(2, killSet.size());
 
         final HopscotchUniqueMultiMap<String, Integer, FindBreakpointEvidenceSpark.QNameAndInterval> qNameMultiMap =

@@ -9,7 +9,7 @@ import java.util.stream.StreamSupport;
 import static org.broadinstitute.hellbender.tools.spark.sv.SVKmer.Base;
 
 /** iterator over kmers with a specified minimum base-wise shannon entropy */
-public class SVKmerizerWithLowComplexityFilter extends SVKmerizer {
+public class SVKmerizerWithLowComplexityFilter extends SVKmerizer<SVKmer> {
     private final double minEntropy;
     private final int[] baseCounts;
     private static final Map<Integer, double[]> entropyMap = new ConcurrentHashMap<>();
@@ -19,7 +19,7 @@ public class SVKmerizerWithLowComplexityFilter extends SVKmerizer {
     }
 
     public SVKmerizerWithLowComplexityFilter( final CharSequence seq, final int kSize, final double minEntropy ) {
-        super(kSize, seq);
+        super(kSize, seq, new SVKmer(kSize));
         this.minEntropy = minEntropy;
         baseCounts = new int[Base.values().length];
         baseCounts[(int)Base.A.value] = kSize;
