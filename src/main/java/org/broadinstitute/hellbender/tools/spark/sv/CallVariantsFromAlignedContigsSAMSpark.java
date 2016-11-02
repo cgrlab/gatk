@@ -73,7 +73,8 @@ public final class CallVariantsFromAlignedContigsSAMSpark extends GATKSparkTool 
 
         final Integer minAlignLengthFinal = minAlignLength;
 
-        callVariantsFromAlignmentRegionsAndWriteVariants(broadcastReference, alignmentRegionsIterable, minAlignLengthFinal, fastaReference, getAuthenticatedGCSOptions(), outputPath);
+        final JavaRDD<VariantContext> variants = callVariantsFromAlignmentRegions(broadcastReference, alignmentRegionsIterable, minAlignLengthFinal);
+        SVVCFWriter.writeVCF(getAuthenticatedGCSOptions(), outputPath, INVERSIONS_OUTPUT_VCF, fastaReference, variants);
     }
 
     @VisibleForTesting

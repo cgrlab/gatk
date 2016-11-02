@@ -58,28 +58,27 @@ public class CallVariantsFromAlignedContigsSparkTest extends BaseTest {
 
         final AlignmentRegion region1 = new AlignmentRegion("1", "contig-1", TextCigarCodec.decode("100M"), true, new SimpleInterval("1", 10000, 10100), 60, 1, 100, 0);
         final AlignmentRegion region2 = new AlignmentRegion("1", "contig-1", TextCigarCodec.decode("100M"), false, new SimpleInterval("1", 20100, 20200), 60, 101, 200, 0);
-        final BreakpointAlignment breakpoint1 = new BreakpointAlignment("contig-1", region1, region2, "", "", new ArrayList<>());
+        final ChimericAlignment breakpoint1 = new ChimericAlignment(region1, region2, "", "", new ArrayList<>());
 
-        final Tuple2<BreakpointAllele, Tuple2<Tuple2<String, String>, BreakpointAlignment>> breakpointTuple1 = new Tuple2<>(breakpoint1.getBreakpointAllele(), new Tuple2<>(new Tuple2<>("1", "contig-1"), breakpoint1));
+        final Tuple2<BreakpointAllele, Tuple2<Tuple2<String, String>, ChimericAlignment>> breakpointTuple1 = new Tuple2<>(new BreakpointAllele.BreakpointAlleleInversion(breakpoint1), new Tuple2<>(new Tuple2<>("1", "contig-1"), breakpoint1));
 
-        Assert.assertTrue(breakpointTuple1._1().isInversion());
+        Assert.assertTrue(SVVariantCallerUtils.isInversion(breakpointTuple1._1()));
 
         final AlignmentRegion region3 = new AlignmentRegion("4", "contig-7", TextCigarCodec.decode("137M141S"), true, new SimpleInterval("19", 38343346, 38343483), 60, 1, 137, 0);
         final AlignmentRegion region4 = new AlignmentRegion("4", "contig-7", TextCigarCodec.decode("137S141M"), false, new SimpleInterval("10", 38342908, 38343049), 60, 138, 278, 0);
-        final BreakpointAlignment breakpoint2 = new BreakpointAlignment("contig-7", region3, region4, "", "", new ArrayList<>());
+        final ChimericAlignment breakpoint2 = new ChimericAlignment(region3, region4, "", "", new ArrayList<>());
 
-        final Tuple2<BreakpointAllele, Tuple2<Tuple2<String, String>, BreakpointAlignment>> breakpointTuple2 = new Tuple2<>(breakpoint2.getBreakpointAllele(), new Tuple2<>(new Tuple2<>("14399","contig-7"), breakpoint2));
+        final Tuple2<BreakpointAllele, Tuple2<Tuple2<String, String>, ChimericAlignment>> breakpointTuple2 = new Tuple2<>(new BreakpointAllele.BreakpointAlleleInversion(breakpoint2), new Tuple2<>(new Tuple2<>("14399","contig-7"), breakpoint2));
 
-        Assert.assertFalse(breakpointTuple2._1().isInversion());
+        Assert.assertFalse(SVVariantCallerUtils.isInversion(breakpointTuple2._1()));
 
         final AlignmentRegion region5 = new AlignmentRegion("3", "contig-7", TextCigarCodec.decode("137M141S"), true, new SimpleInterval("19", 38343346, 38343483), 60, 1, 137, 0);
         final AlignmentRegion region6 = new AlignmentRegion("3", "contig-7", TextCigarCodec.decode("137S141M"), false, new SimpleInterval("19", 38342908, 38343049), 60, 138, 278, 0);
-        final BreakpointAlignment breakpoint3 = new BreakpointAlignment("contig-7", region5, region6, "", "", new ArrayList<>());
+        final ChimericAlignment breakpoint3 = new ChimericAlignment(region5, region6, "", "", new ArrayList<>());
 
-        final Tuple2<BreakpointAllele, Tuple2<Tuple2<String, String>, BreakpointAlignment>> breakpointTuple3 = new Tuple2<>(breakpoint3.getBreakpointAllele(), new Tuple2<>(new Tuple2<>("14399","contig-7"), breakpoint3));
+        final Tuple2<BreakpointAllele, Tuple2<Tuple2<String, String>, ChimericAlignment>> breakpointTuple3 = new Tuple2<>(new BreakpointAllele.BreakpointAlleleInversion(breakpoint3), new Tuple2<>(new Tuple2<>("14399","contig-7"), breakpoint3));
 
-        Assert.assertTrue(breakpointTuple3._1().isInversion());
-
+        Assert.assertTrue(SVVariantCallerUtils.isInversion(breakpointTuple3._1()));
     }
 
     @Test
@@ -92,14 +91,14 @@ public class CallVariantsFromAlignedContigsSparkTest extends BaseTest {
         alignmentRegionList.add(region1);
         alignmentRegionList.add(region2);
         alignmentRegionList.add(region3);
-        final List<BreakpointAlignment> assembledBreakpointsFromAlignmentRegions = CallVariantsFromAlignedContigsSpark.getBreakpointAlignmentsFromAlignmentRegions(contigSequence, alignmentRegionList, 50);
+        final List<ChimericAlignment> assembledBreakpointsFromAlignmentRegions = SVVariantCallerInternal.getBreakpointAlignmentsFromAlignmentRegions(contigSequence, alignmentRegionList, 50);
         Assert.assertEquals(assembledBreakpointsFromAlignmentRegions.size(), 1);
-        final BreakpointAlignment breakpointAlignment = assembledBreakpointsFromAlignmentRegions.get(0);
-        Assert.assertEquals(breakpointAlignment.contigId, "contig-1");
-        Assert.assertEquals(breakpointAlignment.region1, region1);
-        Assert.assertEquals(breakpointAlignment.region2, region3);
-        Assert.assertEquals(breakpointAlignment.homology, "");
-        Assert.assertEquals(breakpointAlignment.insertedSequence, "GAGATAGAGTC");
+        final ChimericAlignment chimericAlignment = assembledBreakpointsFromAlignmentRegions.get(0);
+        Assert.assertEquals(chimericAlignment.contigId, "contig-1");
+        Assert.assertEquals(chimericAlignment.region1, region1);
+        Assert.assertEquals(chimericAlignment.region2, region3);
+        Assert.assertEquals(chimericAlignment.homology, "");
+        Assert.assertEquals(chimericAlignment.insertedSequence, "GAGATAGAGTC");
     }
 
     @Test
@@ -112,16 +111,16 @@ public class CallVariantsFromAlignedContigsSparkTest extends BaseTest {
         alignmentRegionList.add(region1);
         alignmentRegionList.add(region2);
         alignmentRegionList.add(region3);
-        final List<BreakpointAlignment> assembledBreakpointsFromAlignmentRegions = CallVariantsFromAlignedContigsSpark.getBreakpointAlignmentsFromAlignmentRegions(contigSequence, alignmentRegionList, 50);
+        final List<ChimericAlignment> assembledBreakpointsFromAlignmentRegions = SVVariantCallerInternal.getBreakpointAlignmentsFromAlignmentRegions(contigSequence, alignmentRegionList, 50);
         Assert.assertEquals(assembledBreakpointsFromAlignmentRegions.size(), 1);
-        final BreakpointAlignment breakpointAlignment = assembledBreakpointsFromAlignmentRegions.get(0);
-        Assert.assertEquals(breakpointAlignment.contigId, "contig-1");
-        Assert.assertEquals(breakpointAlignment.region1, region1);
-        Assert.assertEquals(breakpointAlignment.region2, region3);
-        Assert.assertEquals(breakpointAlignment.homology, "");
-        Assert.assertEquals(breakpointAlignment.insertedSequence, "TGAGAGTTGGCCCGAACACTGCTGGATTCCACTTCA");
-        Assert.assertEquals(breakpointAlignment.insertionMappings.size(), 1);
-        Assert.assertEquals(breakpointAlignment.insertionMappings.get(0), "1-contig-1:484-525:20,23103196,-,483S42M968S,60,2");
+        final ChimericAlignment chimericAlignment = assembledBreakpointsFromAlignmentRegions.get(0);
+        Assert.assertEquals(chimericAlignment.contigId, "contig-1");
+        Assert.assertEquals(chimericAlignment.region1, region1);
+        Assert.assertEquals(chimericAlignment.region2, region3);
+        Assert.assertEquals(chimericAlignment.homology, "");
+        Assert.assertEquals(chimericAlignment.insertedSequence, "TGAGAGTTGGCCCGAACACTGCTGGATTCCACTTCA");
+        Assert.assertEquals(chimericAlignment.insertionMappings.size(), 1);
+        Assert.assertEquals(chimericAlignment.insertionMappings.get(0), "1-contig-1:484-525:20,23103196,-,483S42M968S,60,2");
     }
 
     @Test
@@ -132,14 +131,14 @@ public class CallVariantsFromAlignedContigsSparkTest extends BaseTest {
         final ArrayList<AlignmentRegion> alignmentRegionList = new ArrayList<>();
         alignmentRegionList.add(region1);
         alignmentRegionList.add(region2);
-        final List<BreakpointAlignment> assembledBreakpointsFromAlignmentRegions = CallVariantsFromAlignedContigsSpark.getBreakpointAlignmentsFromAlignmentRegions(sequence, alignmentRegionList, 50);
+        final List<ChimericAlignment> assembledBreakpointsFromAlignmentRegions = SVVariantCallerInternal.getBreakpointAlignmentsFromAlignmentRegions(sequence, alignmentRegionList, 50);
         Assert.assertEquals(assembledBreakpointsFromAlignmentRegions.size(), 1);
-        final BreakpointAlignment breakpointAlignment = assembledBreakpointsFromAlignmentRegions.get(0);
-        Assert.assertEquals(breakpointAlignment.contigId, "702700");
-        Assert.assertEquals(breakpointAlignment.region1, region1);
-        Assert.assertEquals(breakpointAlignment.region2, region2);
+        final ChimericAlignment chimericAlignment = assembledBreakpointsFromAlignmentRegions.get(0);
+        Assert.assertEquals(chimericAlignment.contigId, "702700");
+        Assert.assertEquals(chimericAlignment.region1, region1);
+        Assert.assertEquals(chimericAlignment.region2, region2);
 
-        final Tuple2<SimpleInterval, SimpleInterval> leftAndRightBreakpointsOnReferenceLeftAlignedForHomology = breakpointAlignment.getLeftAndRightBreakpointsOnReferenceLeftAlignedForHomology();
+        final Tuple2<SimpleInterval, SimpleInterval> leftAndRightBreakpointsOnReferenceLeftAlignedForHomology = chimericAlignment.getLeftAndRightBreakpointsOnReferenceLeftAlignedForHomology();
 
         Assert.assertEquals(leftAndRightBreakpointsOnReferenceLeftAlignedForHomology._1(), new SimpleInterval("chr19", 20138007, 20138007));
         Assert.assertEquals(leftAndRightBreakpointsOnReferenceLeftAlignedForHomology._2(), new SimpleInterval("chr19", 20152651, 20152651));
@@ -150,7 +149,7 @@ public class CallVariantsFromAlignedContigsSparkTest extends BaseTest {
         AlignmentRegion overlappingRegion1 = new AlignmentRegion("overlap", "22", TextCigarCodec.decode("47S154M"), false, new SimpleInterval("19", 48699881, 48700035), 60, 1, 154, 0);
         AlignmentRegion overlappingRegion2 = new AlignmentRegion("overlap", "22", TextCigarCodec.decode("116H85M"), true, new SimpleInterval("19", 48700584, 48700669), 60, 117, 201, 0);
 
-        Assert.assertTrue(CallVariantsFromAlignedContigsSpark.treatNextAlignmentRegionInPairAsInsertion(overlappingRegion1, overlappingRegion2, 50));
+        Assert.assertTrue(SVVariantCallerInternal.treatNextAlignmentRegionInPairAsInsertion(overlappingRegion1, overlappingRegion2, 50));
     }
 
 }
