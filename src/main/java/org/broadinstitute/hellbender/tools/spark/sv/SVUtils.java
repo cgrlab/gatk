@@ -25,7 +25,7 @@ public final class SVUtils {
      * Read a file of kmers.
      * Each line must be exactly SVConstants.KMER_SIZE characters long, and must match [ACGT]*.
      */
-    public static Set<SVKmer> readKmersFile( final int kSize, final String kmersFile, final PipelineOptions popts ) {
+    public static Set<SVKmer> readKmersFile(final int kSize, final String kmersFile, final PipelineOptions popts ) {
         final Set<SVKmer> kmers;
 
         try ( final BufferedReader rdr =
@@ -35,11 +35,11 @@ public final class SVUtils {
             String line;
             while ( (line = rdr.readLine()) != null ) {
                 if ( line.length() != kSize ) {
-                    throw new GATKException("SVKmer kill set contains a line of length " + line.length() +
+                    throw new GATKException("SVKmerLong kill set contains a line of length " + line.length() +
                             " but we were expecting K=" + kSize);
                 }
 
-                final SVKmerizer<SVKmer> kmerizer = new SVKmerizer<SVKmer>(line, kSize, new SVKmer(kSize));
+                final SVKmerizer kmerizer = new SVKmerizer(line, kSize, new SVKmerLong(kSize));
                 if ( !kmerizer.hasNext() ) {
                     throw new GATKException("Unable to kmerize the kmer kill set string '" + line + "'.");
                 }
@@ -55,8 +55,8 @@ public final class SVUtils {
     }
 
     /** Write kmers to file. */
-    public static <KType extends SVKmerBase> void writeKmersFile( final int kSize, final String kmersFile, final PipelineOptions popts,
-                                       final Collection<KType> kmers ) {
+    public static <KType extends SVKmer> void writeKmersFile(final int kSize, final String kmersFile, final PipelineOptions popts,
+                                                             final Collection<KType> kmers ) {
         try ( final Writer writer =
                       new BufferedWriter(new OutputStreamWriter(BucketUtils.createFile(kmersFile, popts))) ) {
             for ( final KType kmer : kmers ) {
@@ -135,7 +135,7 @@ public final class SVUtils {
     /**
      * Provides a stream collector that will collect items into an array list with a given initial capacity.
      */
-    static <T> Collector<T, ?, ArrayList<T>> arrayListCollector(final int size) {
+    public static <T> Collector<T, ?, ArrayList<T>> arrayListCollector(final int size) {
         return Collectors.toCollection( () -> new ArrayList<>(size));
     }
 

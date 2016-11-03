@@ -4,7 +4,6 @@ import com.google.cloud.dataflow.sdk.options.PipelineOptions;
 import com.google.common.annotations.VisibleForTesting;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMSequenceDictionary;
-import htsjdk.samtools.SAMSequenceRecord;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.broadinstitute.hellbender.cmdline.Argument;
@@ -20,7 +19,6 @@ import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,12 +73,12 @@ public final class FindBadGenomicKmersSpark extends GATKSparkTool {
     }
 
     /** Find high copy number kmers in the reference sequence */
-    public static List<SVKmer> findBadGenomicKmers( final JavaSparkContext ctx,
-                                                    final int kSize,
-                                                    final double minEntropy,
-                                                    final ReferenceMultiSource ref,
-                                                    final PipelineOptions options,
-                                                    final SAMSequenceDictionary readsDict ) {
+    public static List<SVKmer> findBadGenomicKmers(final JavaSparkContext ctx,
+                                                       final int kSize,
+                                                       final double minEntropy,
+                                                       final ReferenceMultiSource ref,
+                                                       final PipelineOptions options,
+                                                       final SAMSequenceDictionary readsDict ) {
         // Generate reference sequence RDD.
         final JavaRDD<byte[]> refRDD = SVUtils.getRefRDD(ctx, kSize, ref, options, readsDict, REF_RECORD_LEN, REF_RECORDS_PER_PARTITION);
 
@@ -93,9 +91,9 @@ public final class FindBadGenomicKmersSpark extends GATKSparkTool {
      * Kmerize, mapping to a pair <kmer,1>, reduce by summing values by key, filter out <kmer,N> where
      * N <= MAX_KMER_FREQ, and collect the high frequency kmers back in the driver.
      */
-    @VisibleForTesting static List<SVKmer> processRefRDD( final int kSize,
-                                                          final double minEntropy,
-                                                          final JavaRDD<byte[]> refRDD ) {
+    @VisibleForTesting static List<SVKmer> processRefRDD(final int kSize,
+                                                             final double minEntropy,
+                                                             final JavaRDD<byte[]> refRDD ) {
         return refRDD
                 .flatMapToPair(seq ->
                         SVKmerizerWithLowComplexityFilter.stream(seq, kSize, minEntropy)
@@ -109,11 +107,11 @@ public final class FindBadGenomicKmersSpark extends GATKSparkTool {
 
 
 
-    @VisibleForTesting static List<SVKmer> processIntervals( final int kSize,
-                                                             final double minEntropy,
-                                                             final List<String> highCopyIntervals,
-                                                             final ReferenceMultiSource ref,
-                                                             final PipelineOptions options ) {
+    @VisibleForTesting static List<SVKmer> processIntervals(final int kSize,
+                                                                final double minEntropy,
+                                                                final List<String> highCopyIntervals,
+                                                                final ReferenceMultiSource ref,
+                                                                final PipelineOptions options ) {
         final List<SimpleInterval> intervals =
                 IntervalUtils.convertGenomeLocsToSimpleIntervals(
                     IntervalUtils.loadIntervals(highCopyIntervals, IntervalSetRule.UNION, IntervalMergingRule.ALL, 0,

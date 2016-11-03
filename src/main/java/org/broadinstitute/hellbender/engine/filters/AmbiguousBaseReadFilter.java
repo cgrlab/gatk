@@ -1,16 +1,10 @@
 package org.broadinstitute.hellbender.engine.filters;
 
-import htsjdk.samtools.SAMFileHeader;
 import org.broadinstitute.hellbender.cmdline.Argument;
-import org.broadinstitute.hellbender.tools.spark.transforms.markduplicates.MarkDuplicatesSparkUtils;
+import org.broadinstitute.hellbender.utils.BaseUtils;
 import org.broadinstitute.hellbender.utils.read.GATKRead;
-import org.broadinstitute.hellbender.utils.read.ReadUtils;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
-
-public final class AmbiguousBaseReadFilter extends ReadFilter implements Serializable {
+public final class AmbiguousBaseReadFilter extends ReadFilter {
 
     private static final long serialVersionUID = 1L;
 
@@ -24,12 +18,14 @@ public final class AmbiguousBaseReadFilter extends ReadFilter implements Seriali
     //Filters out reads with more than a threshold number of N's
     @Override
     public boolean test( final GATKRead read ) {
+        final int N_max = (int)(read.getLength()*N_FRAC);
         int num_N = 0;
-        for (int i = 0; i < read.getLength(); i++) {
-            if (read.getBase(i) == 'N') {
+        for (final byte base : read.getBases()) {
+            if (!BaseUtils.isRegularBase(base)) {
                 num_N++;
+                if (num_N > N_max) {return false;}
             }
         }
-        return (num_N < Math.ceil(read.getLength()*N_FRAC));
+        return num_N <= N_max;
     }
 }

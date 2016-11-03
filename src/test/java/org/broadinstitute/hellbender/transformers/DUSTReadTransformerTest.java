@@ -1,27 +1,15 @@
 package org.broadinstitute.hellbender.transformers;
 
-import htsjdk.samtools.SAMFileHeader;
-import org.broadinstitute.hellbender.CommandLineProgramTest;
 import org.broadinstitute.hellbender.utils.read.ArtificialReadUtils;
 import org.broadinstitute.hellbender.utils.read.GATKRead;
 import org.broadinstitute.hellbender.utils.test.BaseTest;
 import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
 
-import static org.testng.Assert.*;
-
 public class DUSTReadTransformerTest extends BaseTest {
-
-    private SAMFileHeader header;
-
-    @BeforeMethod
-    public void before() {
-        header = ArtificialReadUtils.createArtificialSamHeader(1, 1, 1000);
-    }
 
     @DataProvider(name = "sequenceStrings")
     public Object[][] getSequenceStrings() {
@@ -62,14 +50,14 @@ public class DUSTReadTransformerTest extends BaseTest {
     }
 
     @Test(dataProvider = "sequenceStrings")
-    public void testApply(String seq_in, String seq_out) throws Exception {
+    public void testApply(final String seq_in, final String seq_out) throws Exception {
 
-        DUSTReadTransformer dustTrans = new DUSTReadTransformer();
-        byte[] quals = seq_in.getBytes().clone();
+        final DUSTReadTransformer dustTrans = new DUSTReadTransformer((short)15,64,20.0f);
+        final byte[] quals = seq_in.getBytes().clone();
         Arrays.fill(quals,(byte)'I');
-        GATKRead read_in = ArtificialReadUtils.createArtificialRead(header, "foo", 0, 10, seq_in.getBytes(),quals);
-        GATKRead read_out = dustTrans.apply(read_in);
-        Assert.assertEquals(read_in.getBases(),seq_out.getBytes());
+        final GATKRead read_in = ArtificialReadUtils.createArtificialRead(seq_in.getBytes(),quals,"*");
+        final GATKRead read_out = dustTrans.apply(read_in);
+        Assert.assertEquals(read_out.getBases(),seq_out.getBytes());
     }
 
 }

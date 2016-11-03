@@ -1,16 +1,12 @@
-package org.broadinstitute.hellbender.engine.filters;
+package org.broadinstitute.hellbender.tools.spark.pathseq;
 
-import htsjdk.samtools.SAMFileHeader;
-import org.broadinstitute.hellbender.cmdline.Argument;
+import org.broadinstitute.hellbender.engine.filters.ReadFilter;
 import org.broadinstitute.hellbender.tools.spark.transforms.markduplicates.MarkDuplicatesSparkUtils;
 import org.broadinstitute.hellbender.utils.read.GATKRead;
-import org.broadinstitute.hellbender.utils.read.ReadUtils;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
-public final class MarkedDuplicateReadFilter extends ReadFilter implements Serializable {
+public final class MarkedOpticalDuplicateReadFilter extends ReadFilter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -21,11 +17,6 @@ public final class MarkedDuplicateReadFilter extends ReadFilter implements Seria
                 && read.getAttributeAsInteger(MarkDuplicatesSparkUtils.OPTICAL_DUPLICATE_TOTAL_ATTRIBUTE_NAME) != 0) {
             return false;
         }
-        else if (read.isDuplicate()) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        return true;
     }
 }
