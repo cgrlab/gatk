@@ -73,7 +73,7 @@ class ChimericAlignment {
                                 final List<String> insertionMappings) {
 
         final String contigId = region1.contigId;
-        Utils.validateArg(contigId==region2.contigId, "two alignment regions used to construct chimeirc alignment are not from the same assembled contig.");
+        Utils.validateArg(contigId==region2.contigId, "two alignment regions used to construct chimeric alignment are not from the same assembled contig.");
 
         this.contigId = contigId;
         this.region1 = region1;

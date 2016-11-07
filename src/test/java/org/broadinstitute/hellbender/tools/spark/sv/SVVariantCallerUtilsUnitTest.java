@@ -1,7 +1,68 @@
 package org.broadinstitute.hellbender.tools.spark.sv;
 
-/**
- * Created by shuang on 11/7/16.
- */
+import htsjdk.samtools.Cigar;
+import htsjdk.samtools.TextCigarCodec;
+import org.broadinstitute.hellbender.utils.SimpleInterval;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+
+import static org.broadinstitute.hellbender.tools.spark.sv.BreakpointAllele.BreakpointAlleleInversion;
+
+
 public class SVVariantCallerUtilsUnitTest {
+
+    @Test
+    public void testIsInversion() {
+
+        final AlignmentRegion region1 = new AlignmentRegion("1", "contig-1", TextCigarCodec.decode("100M"), true, new SimpleInterval("1", 10000, 10100), 60, 1, 100, 0);
+        final AlignmentRegion region2 = new AlignmentRegion("1", "contig-1", TextCigarCodec.decode("100M"), false, new SimpleInterval("1", 20100, 20200), 60, 101, 200, 0);
+        final ChimericAlignment breakpoint1 = new ChimericAlignment(region1, region2, "", "", new ArrayList<>());
+
+        Assert.assertTrue(SVVariantCallerUtils.involvesStrandSwitch(breakpoint1));
+        Assert.assertTrue(SVVariantCallerUtils.isInversion(new BreakpointAlleleInversion(breakpoint1)));
+
+        final AlignmentRegion region3 = new AlignmentRegion("4", "contig-7", TextCigarCodec.decode("137M141S"), true, new SimpleInterval("19", 38343346, 38343483), 60, 1, 137, 0);
+        final AlignmentRegion region4 = new AlignmentRegion("4", "contig-7", TextCigarCodec.decode("137S141M"), false, new SimpleInterval("10", 38342908, 38343049), 60, 138, 278, 0);
+        final ChimericAlignment breakpoint2 = new ChimericAlignment(region3, region4, "", "", new ArrayList<>());
+
+        Assert.assertTrue(SVVariantCallerUtils.involvesStrandSwitch(breakpoint2));
+        Assert.assertFalse(SVVariantCallerUtils.isInversion(new BreakpointAlleleInversion(breakpoint2)));
+
+        final AlignmentRegion region5 = new AlignmentRegion("3", "contig-7", TextCigarCodec.decode("137M141S"), true, new SimpleInterval("19", 38343346, 38343483), 60, 1, 137, 0);
+        final AlignmentRegion region6 = new AlignmentRegion("3", "contig-7", TextCigarCodec.decode("137S141M"), false, new SimpleInterval("19", 38342908, 38343049), 60, 138, 278, 0);
+        final ChimericAlignment breakpoint3 = new ChimericAlignment(region5, region6, "", "", new ArrayList<>());
+
+        Assert.assertTrue(SVVariantCallerUtils.involvesStrandSwitch(breakpoint3));
+        Assert.assertTrue(SVVariantCallerUtils.isInversion(new BreakpointAlleleInversion(breakpoint3)));
+    }
+
+    @Test
+    public void testClippingArithmetic() {
+        Cigar cigar = TextCigarCodec.decode("100M51S");
+        Assert.assertEquals(SVVariantCallerUtils.getTotalHardClipping(cigar), 0);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(true, cigar), 0);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(false, cigar), 51);
+
+        cigar = TextCigarCodec.decode("51S100M");
+        Assert.assertEquals(SVVariantCallerUtils.getTotalHardClipping(cigar), 0);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(true, cigar), 51);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(false, cigar), 0);
+
+        cigar = TextCigarCodec.decode("100M51H");
+        Assert.assertEquals(SVVariantCallerUtils.getTotalHardClipping(cigar), 51);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(true, cigar), 0);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(false, cigar), 51);
+
+        cigar = TextCigarCodec.decode("51H100M");
+        Assert.assertEquals(SVVariantCallerUtils.getTotalHardClipping(cigar), 51);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(true, cigar), 51);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(false, cigar), 0);
+
+        cigar = TextCigarCodec.decode("12H12S101M13S13H");
+        Assert.assertEquals(SVVariantCallerUtils.getTotalHardClipping(cigar), 25);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(true, cigar), 24);
+        Assert.assertEquals(SVVariantCallerUtils.getNumClippedBases(false, cigar), 26);
+    }
 }

@@ -75,7 +75,7 @@ public final class CallVariantsFromAlignedContigsSpark extends GATKSparkTool {
     private static JavaPairRDD<Tuple2<String, String>, Tuple2<Iterable<AlignmentRegion>, byte[]>> prepAlignmentRegionsForCalling(final JavaSparkContext ctx,
                                                                                                                                  final String pathToInputAlignments,
                                                                                                                                  final String pathToInputAssemblies) {
-        final JavaRDD<AlignmentRegion> inputAlignedContigs = ctx.textFile(pathToInputAlignments).map(ContigsCollection::parseAlignedAssembledContigLine);
+        final JavaRDD<AlignmentRegion> inputAlignedContigs = ctx.textFile(pathToInputAlignments).map(AlignmentRegion::parseAlignedAssembledContigLine);
 
         final JavaPairRDD<Tuple2<String, String>, Iterable<AlignmentRegion>> alignmentRegionsKeyedByAssemblyAndContigId = inputAlignedContigs.mapToPair(alignmentRegion -> new Tuple2<>(new Tuple2<>(alignmentRegion.assemblyId, alignmentRegion.contigId), alignmentRegion)).groupByKey();
 

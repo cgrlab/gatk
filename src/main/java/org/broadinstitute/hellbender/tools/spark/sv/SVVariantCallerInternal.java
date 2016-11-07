@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.broadinstitute.hellbender.tools.spark.sv.BreakpointAllele.BreakpointAlleleInversion;
 import static org.broadinstitute.hellbender.tools.spark.sv.BreakpointAllele.BreakpointAlleleInversion.InversionType.INV_3_TO_5;
 import static org.broadinstitute.hellbender.tools.spark.sv.BreakpointAllele.BreakpointAlleleInversion.InversionType.INV_5_TO_3;
 
@@ -52,7 +53,7 @@ class SVVariantCallerInternal implements Serializable {
     static Tuple2<BreakpointAllele, Tuple2<Tuple2<String,String>, ChimericAlignment>> keyByBreakpointAllele(final Tuple2<Tuple2<String, String>, ChimericAlignment> breakpointIdAndAssembledBreakpoint) {
         final ChimericAlignment chimericAlignment = breakpointIdAndAssembledBreakpoint._2();
         // TODO: 11/4/16 INSDEL calling should add another kind of BreakpointAllele here
-        final BreakpointAllele breakpointAllele = SVVariantCallerUtils.supportsInversionNaive(chimericAlignment) ? new BreakpointAllele.BreakpointAlleleInversion(chimericAlignment) : new BreakpointAllele(chimericAlignment);
+        final BreakpointAllele breakpointAllele = SVVariantCallerUtils.involvesStrandSwitch(chimericAlignment) ? new BreakpointAlleleInversion(chimericAlignment) : new BreakpointAllele(chimericAlignment);
         return new Tuple2<>(breakpointAllele, new Tuple2<>(breakpointIdAndAssembledBreakpoint._1, breakpointIdAndAssembledBreakpoint._2));
     }
 
